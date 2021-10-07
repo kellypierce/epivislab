@@ -15,8 +15,8 @@ from plotly.subplots import make_subplots
 import numpy as np
 import xarray as xr
 import xsimlab as xs
-from episimlab.partition import partition
-from episimlab.setup.coords import InitDefaultCoords
+#from episimlab.partition import partition
+#from episimlab.setup.coords import InitDefaultCoords
 import multiprocessing as mp
 from datetime import datetime
 
@@ -38,7 +38,7 @@ def spatial_simulation(xr_array, shape, compartment):
     return df_shape
 
 
-def make_burden_plot(dataframe, start_date, stop_date):
+def make_burden_plot(dataframe, start_date, stop_date, token):
     # data manipulation
     dataslice = dataframe[(dataframe['date'] >= start_date) & (dataframe['date'] <= stop_date)]
     dates = dataslice['date'].unique()
@@ -69,7 +69,7 @@ def make_burden_plot(dataframe, start_date, stop_date):
             mode='markers',
             marker=dict(
                 size=25,  # d1['marker_size'],
-                color=d1[d1['date'] == dates[k]]['burden_per_10k'],
+                color=d1['burden_per_10k'],
                 colorbar=dict(title='', x=0.45),
                 colorscale="Viridis",
                 cmax=max(d1['burden_per_10k']),
