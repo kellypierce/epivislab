@@ -1,0 +1,11 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "index",
+        "step",
+        "vertex",
+        "compt",
+        "age",
+        "risk"
+    ],
+    "description": "The current state of the simulation. In the context of a compartmental model, this tensor contains the current populations of all compartments along every demographic axis (e.g. age, risk, geospatial vertex)."
+}

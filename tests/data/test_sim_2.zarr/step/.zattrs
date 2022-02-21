@@ -1,0 +1,9 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "step"
+    ],
+    "__xsimlab_master_clock__": 1,
+    "__xsimlab_output_clock__": 1,
+    "calendar": "proleptic_gregorian",
+    "units": "days since 2020-03-11"
+}
