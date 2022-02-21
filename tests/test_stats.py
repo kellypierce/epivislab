@@ -3,7 +3,7 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 import pandas as pd
 import dask.dataframe as dd
-from epivislab.stats import Median
+from epivislab.stats import Quantile
 import pytest
 
 @pytest.fixture(params=['tests/data/test_sim_2.zarr'])
@@ -11,9 +11,13 @@ def simulation_data(request):
     d = xr.open_zarr(request.param)
     return d
 
+@pytest.fixture(params=[0.05, 0.25, 0.5, 0.75, 0.95])
+def quantiles(request):
+    return {'quantile': request.param}
+
 class TestStats:
 
-    def test_median(self, simulation_data):
+    def test_median(self, simulation_data, quantiles):
 
         # calculate median in dask
         chunk_size = len(simulation_data.age) * len(simulation_data.compt) * len(simulation_data.risk) * len(simulation_data.vertex) * len(simulation_data.step)
@@ -22,14 +26,14 @@ class TestStats:
         ].chunk(chunks={i: chunk_size for i in simulation_data.coords}).to_dask_dataframe(
             dim_order=['compt', 'vertex', 'age', 'risk', 'step', 'index']
         )
-        median = Median()
+        median = Quantile(quantile=quantiles['quantile'])
         sims_evl = median.dd_median(ddf=sims_sq, groupers=['compt', 'vertex', 'age', 'risk', 'step'],
                                     aggcol=['compt_model__state'])
 
         # calculate median in pandas
         sims_pd = sims_sq.compute()
         sims_pd_median = sims_pd.groupby(['compt', 'vertex', 'age', 'risk', 'step'])[
-            'compt_model__state'].median().reset_index()
+            'compt_model__state'].quantile(quantiles['quantile']).reset_index()
 
         # combine and check differences
         regress = pd.merge(
