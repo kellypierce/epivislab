@@ -31,6 +31,7 @@ class AggStats:
 
         # remove intermediate columns
         ddf_agg = ddf_agg.drop(aggcol, axis=1).drop('groups', axis=1)
+        ddf_agg = ddf_agg.set_index(groupers)
 
         return ddf_agg
 
@@ -39,6 +40,17 @@ class AggStats:
 
     def finalize(self, value):
         return value
+
+
+class Sum(AggStats):
+
+    def __init__(self):
+        super(AggStats, self).__init__()
+
+    def dd_sum(self, ddf, groupers, aggcol):
+
+        ddf_sum = ddf.groupby(groupers)[aggcol].agg('sum').compute()
+        return ddf_sum
 
 
 class Quantile(AggStats):
@@ -51,7 +63,7 @@ class Quantile(AggStats):
         value = grouped.quantile(q=self.quantile)
         return value
 
-    def dd_median(self, ddf, groupers, aggcol):
+    def dd_quantile(self, ddf, groupers, aggcol):
         return self.dd_agg(
             ddf=ddf,
             groupers=groupers,
