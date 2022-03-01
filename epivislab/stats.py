@@ -21,6 +21,7 @@ class AggStats:
         keep = groupers + aggcol
         drop = ddf.columns.difference(keep)
 
+        print(f'Dropping columns {drop} and aggregating by {groupers}.')
         ddf_agg = ddf.drop(drop, axis=1).groupby(groupers).agg(aggfxn).compute()
 
         ddf_agg['groups'] = [i[0][0] for i in ddf_agg.values]
@@ -31,7 +32,10 @@ class AggStats:
 
         # remove intermediate columns
         ddf_agg = ddf_agg.drop(aggcol, axis=1).drop('groups', axis=1)
-        ddf_agg = ddf_agg.set_index(groupers)
+
+        # for consistency with dask built-in aggregations that return dask dataframes, we'll convert
+        # back to a dask dataframe with a single partition
+        ddf_agg = dd.from_pandas(ddf_agg, npartitions=1)
 
         return ddf_agg
 
@@ -49,7 +53,8 @@ class Sum(AggStats):
 
     def dd_sum(self, ddf, groupers, aggcol):
 
-        ddf_sum = ddf.groupby(groupers)[aggcol].agg('sum').compute()
+        ddf_sum = ddf.groupby(groupers)[aggcol].agg('sum')
+
         return ddf_sum
 
 

@@ -6,14 +6,17 @@ import dask.dataframe as dd
 from epivislab.stats import Quantile, Sum
 import pytest
 
+
 @pytest.fixture(params=['tests/data/test_sim_2.zarr'])
 def simulation_data(request):
     d = xr.open_zarr(request.param)
     return d
 
+
 @pytest.fixture(params=[0.05, 0.25, 0.5, 0.75, 0.95])
 def quantiles(request):
     return {'quantile': request.param}
+
 
 class TestStats:
 
@@ -28,7 +31,7 @@ class TestStats:
         )
         median = Quantile(quantile=quantiles['quantile'])
         sims_evl = median.dd_quantile(ddf=sims_sq, groupers=['compt', 'vertex', 'age', 'risk', 'step'],
-                                    aggcol=['compt_model__state']).reset_index()
+                                    aggcol=['compt_model__state']).compute().reset_index()
 
         # calculate median in pandas
         sims_pd = sims_sq.compute()
@@ -50,7 +53,7 @@ class TestStats:
 
     def test_sum(self, simulation_data):
 
-        # calculate median in dask
+        # calculate sum in dask
         chunk_size = len(simulation_data.age) * len(simulation_data.compt) * len(simulation_data.risk) * len(
             simulation_data.vertex) * len(simulation_data.step)
         sims_sq = simulation_data[
@@ -61,7 +64,7 @@ class TestStats:
 
         sum_ = Sum()
         sims_evl = sum_.dd_sum(ddf=sims_sq, groupers=['compt', 'vertex', 'age', 'risk', 'step'],
-                                      aggcol=['compt_model__state']).reset_index()
+                                      aggcol=['compt_model__state']).compute().reset_index()
 
         # calculate median in pandas
         sims_pd = sims_sq.compute()
