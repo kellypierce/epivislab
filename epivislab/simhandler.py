@@ -4,6 +4,7 @@ import pandas as pd
 import dask.dataframe as dd
 import dask
 from epivislab.stats import Sum, Quantile
+from epivislab.timeseries import interval_timeseries, spaghetti_timeseries
 
 class SimHandler:
 
@@ -160,6 +161,35 @@ class EpiSummary(SimHandler):
             on=groupers,
             how='outer'
         )
-
+        sims_summary = sims_summary.set_index(groupers)
         sims_ds = sims_summary.to_xarray()
         return sims_ds
+
+    def interval_plot(self, groupers, aggcol, upper, lower):
+        """Wrapper to prediction_interval to generate plot without intermediate step"""
+
+        summary_xr = self.prediction_interval(groupers=groupers, aggcol=aggcol, upper=upper, lower=lower)
+
+        return interval_timeseries(summary_xr=summary_xr)
+
+    def spaghetti_plot(self):
+
+        try:
+            assert len(self.between_sim) == 1
+
+        except AssertionError:
+            raise NotImplementedError('Spaghetti time series can only be created for simulations with a single between-simulation coordinate.')
+
+        try:
+            assert len(self.state_coord) == 1
+
+        except AssertionError:
+            raise NotImplementedError('Spaghetti time series can only be created for simulations with a single measured coordinate.')
+
+        try:
+            assert len(self.time_coord) == 1
+
+        except AssertionError:
+            raise NotImplementedError('Spaghetti time series can only be created for simulations with a single time coordinate.')
+
+        return spaghetti_timeseries(self.simulation, self.time_coord[0], self.measured[0], self.between_sim[0])
