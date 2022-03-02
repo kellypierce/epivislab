@@ -152,7 +152,7 @@ def make_burden_plot(dataframe, start_date, stop_date, token):
             name=f'frame{k}') for k in range(len(dates))
     ]
 
-    fig.update(frames=frames);
+    fig.update(frames=frames)
 
     sliders = [
         dict(

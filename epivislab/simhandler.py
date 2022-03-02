@@ -86,6 +86,7 @@ class EpiSummary(SimHandler):
         self.chunk_sim = self.make_chunks()
 
     def sum_over_groups(self, groupers, aggcol):
+        """Sum column 'aggcol' within simulations, maintaining groups named in 'groupers';  return a dask.DataFrame"""
 
         # the coordinates that separate simulations must be included as a grouping variable
         try:
@@ -107,6 +108,8 @@ class EpiSummary(SimHandler):
         return simulation_sum
 
     def quantile_between_sims(self, groupers, aggcol, quantile):
+        """Calculate quantiles of column 'aggcol' between simulations, maintaining groups named in 'groupers';
+         return a dask.DataFrame"""
 
         if type(aggcol) == str:
             aggcol = [aggcol]
@@ -172,7 +175,7 @@ class EpiSummary(SimHandler):
 
         return interval_timeseries(summary_xr=summary_xr)
 
-    def spaghetti_plot(self):
+    def spaghetti_plot(self, **kwargs):
 
         try:
             assert len(self.between_sim) == 1
@@ -181,7 +184,7 @@ class EpiSummary(SimHandler):
             raise NotImplementedError('Spaghetti time series can only be created for simulations with a single between-simulation coordinate.')
 
         try:
-            assert len(self.state_coord) == 1
+            assert len(self.measured) == 1
 
         except AssertionError:
             raise NotImplementedError('Spaghetti time series can only be created for simulations with a single measured coordinate.')
@@ -192,4 +195,20 @@ class EpiSummary(SimHandler):
         except AssertionError:
             raise NotImplementedError('Spaghetti time series can only be created for simulations with a single time coordinate.')
 
-        return spaghetti_timeseries(self.simulation, self.time_coord[0], self.measured[0], self.between_sim[0])
+        if kwargs:
+            assert 'groupers' in kwargs.keys()
+            assert 'aggcol' in kwargs.keys()
+
+            # slow, foolish and annoying: dask.DataFrame to pandas.Series w/multiindex to pandas.DataFrame to
+            # pandas.DataFrame with different column names to pandas.Series w/multiindex to xarray
+            # reasons: (1) no dask to xarray method yet, and (2) aggcol name is lost in dask to pandas conversion
+            sum_simulation = self.sum_over_groups(groupers=kwargs['groupers'], aggcol=kwargs['aggcol']).compute().reset_index()
+            sum_simulation = sum_simulation.rename(columns={'': kwargs['aggcol']})
+            sum_simulation = sum_simulation.set_index(kwargs['groupers'])
+            sum_simulation = sum_simulation.to_xarray()
+            return spaghetti_timeseries(sum_simulation, self.time_coord[0], kwargs['aggcol'], self.between_sim[0])
+
+        else:
+            return spaghetti_timeseries(self.simulation, self.time_coord[0], self.measured[0], self.between_sim[0])
+
+
