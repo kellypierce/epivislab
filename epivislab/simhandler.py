@@ -1,3 +1,6 @@
+"""High-level API classes for working with epidemic simulation data
+"""
+
 import xarray as xr
 import numpy as np
 import pandas as pd
@@ -7,6 +10,18 @@ from epivislab.stats import Sum, Quantile
 from epivislab.timeseries import interval_timeseries, spaghetti_timeseries
 
 class SimHandler:
+    """Organizes ``xarray`` simulation data coordinates and manages aggregation and summary statistic calculations.
+
+    Class instantiation automatically calls several data validation, cleaning, and organizing methods.
+    See :func:`validate`, :func:`make_lists`, and :func:`chunk_sim` for more details on these methods.
+
+    Attributes:
+        simulation (xarray): simulation data
+        state_coord (str, list): coodinate(s) for simulation state data (e.g. disease compartment)
+        within_sim (str, list): coordinate(s) for within-simulation data
+        between_sim (str, list): coordinate(s) for between-simulation data
+        time_coord (str): coordinate for timestep data
+    """
 
     def __init__(self, simulation, state_coord, within_sim_coord, between_sim_coord, measured_coord, time_coord):
         self.simulation = simulation
@@ -18,7 +33,8 @@ class SimHandler:
         self.measured = measured_coord
         self.validate()
         self.make_lists()
-        self.chunk_sim = self.make_chunks()
+        self.chunk_sim = None
+        self.make_chunks()
 
     def validate(self):
         """Check that all coords are identified as between, within, or measured"""
@@ -36,6 +52,9 @@ class SimHandler:
         assert set(self.measured).issubset(set(list(self.simulation.keys())))
 
     def make_lists(self):
+        """Convert ``state_coord``, ``within_sim``, ``between_sim``, and ``measured`` coordinates provided as
+        strings to single item lists.
+        """
 
         if type(self.state_coord) == str:
             self.state_coord = [self.state_coord]
@@ -47,6 +66,24 @@ class SimHandler:
             self.measured = [self.measured]
 
     def make_chunks(self):
+        """Convert the ``xarray`` :attr:`simulation` to a ``dask.DataFrame``.
+
+        The resulting ``dask.DataFrame`` will have a chunk size equal to the length of values in each each simulation
+        as inferred by the combined lengths of all simulation coordinates. The dimensions will be ordered as follows:
+
+        - self.within_sim
+        - self.state_coord
+        - self.time_coord
+        - self.between_sim
+
+        Per the `Dask recommendation <https://xarray.pydata.org/en/stable/generated/xarray.Dataset.to_dask_dataframe.html>`_.,
+        the last dimension will be contiguous in the resulting ``dask.DataFrame``. This ordering ensures that replicate
+        simulation measures are organized next to each other, for faster slicing and computation of between-simulation
+        statistics.
+
+        Returns:
+            None; assigns chunked ``dask.DataFrame`` to :attr:`chunk_sim`
+        """
 
         # get chunk size length of values in each simulation, except the measured value
         chunk_size = 0
@@ -68,9 +105,11 @@ class SimHandler:
             dim_order=self.all_coords
         )
 
-        return chunk_sim
+        self.chunk_sim = chunk_sim
 
 class EpiSummary(SimHandler):
+    """Extends :class:`SimHandler` for to implement aggregations.
+    """
 
     def __init__(self, simulation, state_coord, within_sim_coord, between_sim_coord, measured_coord, time_coord):
         super(SimHandler, self).__init__()
@@ -83,10 +122,24 @@ class EpiSummary(SimHandler):
         self.measured = measured_coord
         self.validate()
         self.make_lists()
-        self.chunk_sim = self.make_chunks()
+        self.chunk_sim = None
+        self.make_chunks()
 
     def sum_over_groups(self, groupers, aggcol):
-        """Sum column 'aggcol' within simulations, maintaining groups named in 'groupers';  return a dask.DataFrame"""
+        """Sum column ``aggcol`` within simulations, maintaining groups named in ``groupers``
+
+        This method checks that ``groupers`` are not between simulation coordinates (which cannot be validly summed),
+        and checks that the ``aggcol`` is a measured coordinate.
+
+        The time and state coordinates should be explicitly listed in ``groupers``.
+
+        Args:
+            groupers (list of str): names of coordinates to maintain in aggregated data
+            aggcol (str): name of measured coordinate
+
+        Returns:
+            dask.DataFrame: simulation data summed across within-simulation variables not included in ``groupers``.
+        """
 
         # the coordinates that separate simulations must be included as a grouping variable
         try:
@@ -108,8 +161,23 @@ class EpiSummary(SimHandler):
         return simulation_sum
 
     def quantile_between_sims(self, groupers, aggcol, quantile):
-        """Calculate quantiles of column 'aggcol' between simulations, maintaining groups named in 'groupers';
-         return a dask.DataFrame"""
+        """Calculate quantiles of column ``aggcol`` between simulations, maintaining groups named in ``groupers``
+
+        This method checks that ``groupers`` are not between simulation coordinates (which cannot be validly summed),
+        and checks that the ``aggcol`` is a measured coordinate.
+
+        The time and state coordinates should be explicitly listed in ``groupers``. If any within-simulation coordinates
+        are excluded from ``groupers``, this method will first call :func:`sum_over_groups` to sum data by the
+        desired grouping. After summation is complete, valide quantiles are calculated.
+
+        Args:
+            groupers (list of str): names of coordinates to maintain in aggregated data
+            aggcol (str): name of measured coordinate
+            quantile (float): quantile value in the (0, 1) interval; passed to :class:`Quantile` for calculation.
+
+        Returns:
+            dask.DataFrame: simulation data quantiles by ``groupers`` calculated across all simulations.
+        """
 
         if type(aggcol) == str:
             aggcol = [aggcol]
@@ -138,6 +206,18 @@ class EpiSummary(SimHandler):
         return simulation_quantile
 
     def prediction_interval(self, groupers, aggcol, upper, lower):
+        """Wrapper to :func:`quantile_between_sum` to calculate upper, lower, 50% quantiles.
+
+        Args:
+            groupers (list of str): names of coordinates to maintain in aggregated data
+            aggcol (str): name of measured coordinate
+            upper (float): quantile value in the (0, 1) interval; passed to :func:`quantile_between_sims`
+            lower (float): quantile value in the (0, 1) interval; passed to :func:`quantile_between_sims`
+
+        Returns:
+            xarray: quantile data for the grouped simulation
+        """
+
 
         assert upper < 1.0
         assert upper > 0.0
@@ -169,13 +249,33 @@ class EpiSummary(SimHandler):
         return sims_ds
 
     def interval_plot(self, groupers, aggcol, upper, lower):
-        """Wrapper to prediction_interval to generate plot without intermediate step"""
+        """Wrapper to prediction_interval to calculate interval and generate plot
+        Args:
+            groupers (list of str): names of coordinates to maintain in aggregated data
+            aggcol (str): name of measured coordinate
+            upper (float): quantile value in the (0, 1) interval`
+            lower (float): quantile value in the (0, 1) interval`
+
+        Returns:
+            None; outputs plotly graph using plotly ``display`` method.
+        """
 
         summary_xr = self.prediction_interval(groupers=groupers, aggcol=aggcol, upper=upper, lower=lower)
 
         return interval_timeseries(summary_xr=summary_xr)
 
     def spaghetti_plot(self, **kwargs):
+        """Generate spaghetti plots directly from :attr:`simulation`
+
+        Optionally, data can be grouped by passing ``groupers`` and ``aggcol`` arguments, which are passed on
+        to :func:`timeseries.spaghetti_timeseries`.
+
+        Args:
+            **kwargs (optional): optional keyword to :func:`epivislab.timeseries.spaghetti_timeseries`
+
+        Returns:
+            None; outputs plotly graph using plotly ``display`` method.
+        """
 
         try:
             assert len(self.between_sim) == 1

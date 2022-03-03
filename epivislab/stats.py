@@ -1,13 +1,28 @@
+"""Classes for calculating summary statistics for epidemic simulations
+"""
+
 import xarray as xr
 import numpy as np
 import dask.dataframe as dd
 
 
 class AggStats:
+    """Class for constructing aggregations across multiple columns in ``dask.DataFrames``
+    """
 
     def dd_agg(self, ddf, groupers, aggcol, aggfxn):
-        """Aggregate a dask dataframe on multiple columns using a custom aggregation function,
-        and split the resulting grouping column back into distinct columns."""
+        """Aggregate a ``dask.DataFrame`` on multiple columns using a custom aggregation function,
+        and split the resulting grouping column back into distinct columns.
+
+        Args:
+            ddf (dask.DataFrame): simulation data
+            aggcol (str): name of column in ``dask.DataFrame`` containing measurements to aggregate
+            aggfxn (str): aggregation function name
+
+        Returns:
+            dask.DataFrame: data aggregated across groupers
+
+        """
 
         if type(aggcol) == str:
             aggcol = [aggcol]
@@ -47,11 +62,24 @@ class AggStats:
 
 
 class Sum(AggStats):
+    """Extends :class:`AggStats` for summation aggregations.
+    """
 
     def __init__(self):
         super(AggStats, self).__init__()
 
     def dd_sum(self, ddf, groupers, aggcol):
+        """Passes arguments to ``AggStats.dd_agg`` for summation.
+
+        Args:
+            ddf (dask.DataFrame): simulation data
+            aggcol (str): name of column in ddf containing measurements to aggregate
+            aggfxn (str): name of aggregation function to use
+
+        Returns:
+            dask.DataFrame: data aggregated across groupers
+
+        """
 
         ddf_sum = ddf.groupby(groupers)[aggcol].agg('sum')
 
@@ -59,6 +87,11 @@ class Sum(AggStats):
 
 
 class Quantile(AggStats):
+    """Extends :class:`AggStats` for quantile aggregations.
+
+    Attributes:
+        quantile (float): quantile value in the (0, 1) interval
+    """
 
     def __init__(self, quantile):
         super(AggStats, self).__init__()
@@ -69,6 +102,18 @@ class Quantile(AggStats):
         return value
 
     def dd_quantile(self, ddf, groupers, aggcol):
+        """Passes arguments to ``AggStats.dd_agg`` for quantile calculation.
+
+        Args:
+            ddf (dask.DataFrame): simulation data
+            aggcol (str): name of column in ddf containing measurements to aggregate
+            aggfxn (str): name of aggregation function to use
+
+        Returns:
+            dask.DataFrame: data aggregated across groupers
+
+        """
+
         return self.dd_agg(
             ddf=ddf,
             groupers=groupers,

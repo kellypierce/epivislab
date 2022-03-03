@@ -1,3 +1,6 @@
+"""Methods for generating timeseries plots
+"""
+
 import numpy as np
 import plotly
 import plotly.express as px
@@ -6,16 +9,47 @@ from ipywidgets import widgets
 
 
 def get_summary_defaults(xr):
+    """Detect dropdown widget defaults for prediction interval plots from coordinates of ``xarray``
+
+    Excludes coordinates with ``np.datetime64`` type, as these are assumed to contain the timestep data to
+    be used for the x-axis.
+
+    Args:
+        xr (xarray): simulation data
+
+    Returns:
+        dict: dictionary with {coordinate name: default value} structure
+    """
 
     return {i: xr[i][0].values.item() for i in list(xr.coords) if type(xr[i][0].values) != np.datetime64}
 
 
 def get_spaghetti_defaults(xr, index_coord):
+    """Detect dropdown widget defaults for spaghetti plots from coordinates of ``xarray``
+
+    Exlucludes coordinates with ``np.datetime64`` type, as these are assumed to contain the timestep data to
+    be used for the x-axis. Also excludes the ``index_coord``.
+
+    Args:
+        xr (xarray): simulation data
+
+    Returns:
+        dict: dictionary with {coordinate name: default value} structure
+    """
 
     return {i: xr[i][0].values.item() for i in list(xr.coords) if (type(xr[i][0].values) != np.datetime64) and (i != index_coord)}
 
 
 def build_widgets(data_xr, defaults):
+    """Construct dropdown widgets given simulation data and dropdown default values.
+
+    Args:
+        data_xr (xarray): simulation data
+        defaults (dict): dictionary with {coordinate name: default value} structure
+
+    Returns:
+        dict: dictionary with {coordinate name: ``widgets.Dropdown`` object} structure
+    """
 
     # build widgets
     widget_dict = {}
@@ -31,6 +65,15 @@ def build_widgets(data_xr, defaults):
 
 
 def interval_timeseries(summary_xr):
+    """Create a prediction interval plot
+
+    Args:
+        summary_xr (xarray): simulation data containing coordinates `upper` (upper predition interval), `lower` \
+        (lower prediction interval), and `median` (median prediction value).
+
+    Returns:
+        None; outputs plotly graph using plotly ``display`` method.
+    """
 
     # select a default subset of the xarray
     defaults = get_summary_defaults(summary_xr)
@@ -97,6 +140,17 @@ def interval_timeseries(summary_xr):
 
 
 def spaghetti_timeseries(simulation_xr, x_val, y_val, index_coord):
+    """Create a spaghetti plot.
+
+    Args:
+        simulation_xr (xarray): simulation data containing data from multiple simulations.
+        x_val (str): coordinate in ``simulation_xr`` containing x-axis data (timestep data)
+        y_val (str): coordinate in ``simulation_xr`` containing y-axis data (simulation measurement data)
+        index_coord (str): coordinate in ``simulation_xr`` containing index value distinguising different simulations.
+
+    Returns:
+        None; outputs plotly graph using plotly ``display`` method.
+    """
 
     # select a default subset of the xarray
     defaults = get_spaghetti_defaults(simulation_xr, index_coord)
