@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Class Stats Reference &mdash; epivislab 0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Module timeseries reference" href="timeseries.html" />
+    <link rel="prev" title="Class SimHandler reference" href="simhandler.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> epivislab
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="simhandler.html">Class <code class="docutils literal notranslate"><span class="pre">SimHandler</span></code> reference</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Class <code class="docutils literal notranslate"><span class="pre">Stats</span></code> Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timeseries.html">Module <code class="docutils literal notranslate"><span class="pre">timeseries</span></code> reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="maps.html">Module <code class="docutils literal notranslate"><span class="pre">maps</span></code> reference</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">epivislab</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="api.html">API Reference</a> &raquo;</li>
+      <li>Class <code class="docutils literal notranslate"><span class="pre">Stats</span></code> Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/stats.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-epivislab.stats">
+<span id="class-stats-reference"></span><h1>Class <code class="docutils literal notranslate"><span class="pre">Stats</span></code> Reference<a class="headerlink" href="#module-epivislab.stats" title="Permalink to this headline"></a></h1>
+<p>Classes for calculating summary statistics for epidemic simulations</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="epivislab.stats.AggStats">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epivislab.stats.</span></span><span class="sig-name descname"><span class="pre">AggStats</span></span><a class="headerlink" href="#epivislab.stats.AggStats" title="Permalink to this definition"></a></dt>
+<dd><p>Class for constructing aggregations across multiple columns in <code class="docutils literal notranslate"><span class="pre">dask.DataFrames</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="epivislab.stats.AggStats.dd_agg">
+<span class="sig-name descname"><span class="pre">dd_agg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ddf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groupers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggcol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggfxn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epivislab.stats.AggStats.dd_agg" title="Permalink to this definition"></a></dt>
+<dd><p>Aggregate a <code class="docutils literal notranslate"><span class="pre">dask.DataFrame</span></code> on multiple columns using a custom aggregation function,
+and split the resulting grouping column back into distinct columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ddf</strong> (<em>dask.DataFrame</em>) – simulation data</p></li>
+<li><p><strong>aggcol</strong> (<em>str</em>) – name of column in <code class="docutils literal notranslate"><span class="pre">dask.DataFrame</span></code> containing measurements to aggregate</p></li>
+<li><p><strong>aggfxn</strong> (<em>str</em>) – aggregation function name</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>data aggregated across groupers</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dask.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="epivislab.stats.Sum">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epivislab.stats.</span></span><span class="sig-name descname"><span class="pre">Sum</span></span><a class="headerlink" href="#epivislab.stats.Sum" title="Permalink to this definition"></a></dt>
+<dd><p>Extends <a class="reference internal" href="#epivislab.stats.AggStats" title="epivislab.stats.AggStats"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggStats</span></code></a> for summation aggregations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="epivislab.stats.Sum.dd_sum">
+<span class="sig-name descname"><span class="pre">dd_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ddf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groupers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggcol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epivislab.stats.Sum.dd_sum" title="Permalink to this definition"></a></dt>
+<dd><p>Passes arguments to <code class="docutils literal notranslate"><span class="pre">AggStats.dd_agg</span></code> for summation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ddf</strong> (<em>dask.DataFrame</em>) – simulation data</p></li>
+<li><p><strong>aggcol</strong> (<em>str</em>) – name of column in ddf containing measurements to aggregate</p></li>
+<li><p><strong>aggfxn</strong> (<em>str</em>) – name of aggregation function to use</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>data aggregated across groupers</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dask.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="epivislab.stats.Quantile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">epivislab.stats.</span></span><span class="sig-name descname"><span class="pre">Quantile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantile</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epivislab.stats.Quantile" title="Permalink to this definition"></a></dt>
+<dd><p>Extends <a class="reference internal" href="#epivislab.stats.AggStats" title="epivislab.stats.AggStats"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggStats</span></code></a> for quantile aggregations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="epivislab.stats.Quantile.quantile">
+<span class="sig-name descname"><span class="pre">quantile</span></span><a class="headerlink" href="#epivislab.stats.Quantile.quantile" title="Permalink to this definition"></a></dt>
+<dd><p>quantile value in the (0, 1) interval</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="epivislab.stats.Quantile.dd_quantile">
+<span class="sig-name descname"><span class="pre">dd_quantile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ddf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groupers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggcol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#epivislab.stats.Quantile.dd_quantile" title="Permalink to this definition"></a></dt>
+<dd><p>Passes arguments to <code class="docutils literal notranslate"><span class="pre">AggStats.dd_agg</span></code> for quantile calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ddf</strong> (<em>dask.DataFrame</em>) – simulation data</p></li>
+<li><p><strong>aggcol</strong> (<em>str</em>) – name of column in ddf containing measurements to aggregate</p></li>
+<li><p><strong>aggfxn</strong> (<em>str</em>) – name of aggregation function to use</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>data aggregated across groupers</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dask.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="simhandler.html" class="btn btn-neutral float-left" title="Class SimHandler reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="timeseries.html" class="btn btn-neutral float-right" title="Module timeseries reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Kelly Pierce.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
