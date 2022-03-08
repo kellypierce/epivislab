@@ -3,3 +3,6 @@
 .idea/*
 shapefiles
 shapefiles/*
+localdocs/build
+localdocs/build/*
+
