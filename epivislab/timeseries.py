@@ -136,7 +136,7 @@ def interval_timeseries(summary_xr):
     )
 
     container1 = widgets.HBox(list(widget_dict.values()))
-    display(widgets.VBox([container1, g]))
+    return widgets.VBox([container1, g])
 
 
 def spaghetti_timeseries(simulation_xr, x_val, y_val, index_coord):
@@ -192,4 +192,4 @@ def spaghetti_timeseries(simulation_xr, x_val, y_val, index_coord):
     )
 
     container1 = widgets.HBox(list(widget_dict.values()))
-    display(widgets.VBox([container1, g]))
+    return widgets.VBox([container1, g])
